@@ -1,0 +1,73 @@
+
+/* ページ全体 */
+body {
+    font-family: sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 30px 15px;
+}
+
+/* メイン領域 */
+.container {
+    background: white;
+    max-width: 600px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 3px 10px #ddd;
+}
+
+/* タイトル */
+h1 {
+    color: #2563eb;
+    text-align: center;
+}
+
+/* 入力欄 */
+input, textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    margin: 8px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+/* ボタン */
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 4px;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+/* メモ */
+.memo {
+    background: #f8fafc;
+    border-left: 4px solid #2563eb;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 5px;
+}
+
+.memo small {
+    color: #666;
+}
+
+/* 非表示 */
+.hidden {
+    display: none;
+}
+
+/* ステータス */
+#status {
+    color: #555;
+}
