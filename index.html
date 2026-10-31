@@ -34,22 +34,32 @@
     <!-- メモ画面 -->
     <div id="memoArea" class="hidden">
 
-        <button id="logoutBtn">ログアウト</button>
+        <div class="user-header">
+            <p id="userInfo">ログイン中</p>
+            <button id="logoutBtn" class="logout-btn">
+                ログアウト
+            </button>
+        </div>
 
-        <h2>新しいメモ</h2>
-
-        <input type="text" id="name"
-            placeholder="投稿者名">
-
-        <textarea id="message" rows="3"
-            placeholder="メモを入力してください"></textarea>
-
-        <button id="addBtn">メモを登録</button>
-
-        <h2>登録済みメモ</h2>
-
-        <div id="memoList"></div>
-
+        <section class="form-section">
+            <h2>新しいメモ</h2>
+    
+            <input type="text" id="name"
+                placeholder="投稿者名">
+    
+            <textarea id="message" rows="3"
+                placeholder="メモを入力してください"></textarea>
+    
+            <button id="addBtn" class="primary-btn">
+                メモを登録
+            </button>
+        </section>
+    
+        <section class="list-section">
+            <h2>登録済みメモ</h2>
+            <div id="memoList"></div>
+        </section>
+    
     </div>
 
 </div>
