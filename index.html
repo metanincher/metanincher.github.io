@@ -2,124 +2,264 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Memo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Memo</title>
 
-    <style>
-        body {
-            font-family: sans-serif;
-            background: #f0f4f8;
-            margin: 0;
-            padding: 30px 15px;
-        }
-
-        .container {
-            background: white;
-            max-width: 600px;
-            margin: auto;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 3px 10px #ddd;
-        }
-
-        h1 {
-            color: #2563eb;
-            text-align: center;
-        }
-
-        input, textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 12px;
-            margin: 8px 0 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-
-        button {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .memo {
-            background: #f8fafc;
-            border-left: 4px solid #2563eb;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 5px;
-        }
-
-        .memo small {
-            color: #666;
-        }
-    </style>
+<style>
+body {
+    font-family: sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 30px 15px;
+}
+.container {
+    background: white;
+    max-width: 600px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 15px;
+}
+input, textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    margin: 8px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 4px;
+}
+.memo {
+    background: #f8fafc;
+    border-left: 4px solid #2563eb;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 5px;
+}
+.hidden { display: none; }
+#status { color: #555; }
+</style>
 </head>
 
 <body>
-
 <div class="container">
 
-    <h1>Family Memo</h1>
-    <p>家族で共有するメモ帳</p>
+<h1>Family Memo</h1>
+<p id="status">ログインしてください。</p>
+
+<!-- ログイン画面 -->
+<div id="loginArea">
+    <h2>ログイン</h2>
+    <input type="email" id="email" placeholder="メールアドレス">
+    <input type="password" id="password" placeholder="パスワード">
+    <button id="loginBtn">ログイン</button>
+</div>
+
+<!-- メモ画面 -->
+<div id="memoArea" class="hidden">
+
+    <button id="logoutBtn">ログアウト</button>
 
     <h2>新しいメモ</h2>
 
-    <label>投稿者</label>
-    <input type="text" id="name" placeholder="名前を入力">
+    <input type="text" id="name" placeholder="投稿者名">
 
-    <label>メモの内容</label>
     <textarea id="message" rows="3"
         placeholder="メモを入力してください"></textarea>
 
-    <button onclick="addMemo()">メモを登録</button>
+    <button id="addBtn">メモを登録</button>
 
     <h2>登録済みメモ</h2>
-
     <div id="memoList"></div>
 
 </div>
 
-<script>
+</div>
 
-function addMemo() {
+<script type="module">
 
-    const name = document.getElementById("name").value;
-    const message = document.getElementById("message").value;
+// Firebase SDKの読み込み
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
 
-    if (name === "" || message === "") {
-        alert("名前とメモを入力してください");
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
+
+
+// Firebaseの設定
+const firebaseConfig = {
+  apiKey: "AIzaSyBOHN3MV6H8SSPe3yyUjAuK6CQ6nNkbO50",
+  authDomain: "family-memo-f928b.firebaseapp.com",
+  projectId: "family-memo-f928b",
+  storageBucket: "family-memo-f928b.firebasestorage.app",
+  messagingSenderId: "680337364703",
+  appId: "1:680337364703:web:503cec20a0b7691ea7fb6a"
+};
+
+
+// Firebase初期化
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+// HTML要素
+const loginArea = document.getElementById("loginArea");
+const memoArea = document.getElementById("memoArea");
+const status = document.getElementById("status");
+const memoList = document.getElementById("memoList");
+
+let unsubscribeMemos = null;
+
+
+// ログイン処理
+document.getElementById("loginBtn").addEventListener("click", async () => {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+        alert("ログインできませんでした: " + error.message);
+    }
+
+});
+
+
+// ログアウト処理
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await signOut(auth);
+});
+
+
+// ログイン状態の監視
+onAuthStateChanged(auth, (user) => {
+
+    if (unsubscribeMemos) {
+        unsubscribeMemos();
+        unsubscribeMemos = null;
+    }
+
+    memoList.replaceChildren();
+
+    if (user) {
+        loginArea.classList.add("hidden");
+        memoArea.classList.remove("hidden");
+
+        status.textContent = "ログイン中: " + user.email;
+
+        loadMemos();
+
+    } else {
+        loginArea.classList.remove("hidden");
+        memoArea.classList.add("hidden");
+
+        status.textContent = "ログインしてください。";
+    }
+
+});
+
+
+// メモ登録
+document.getElementById("addBtn").addEventListener("click", async () => {
+
+    const user = auth.currentUser;
+    const name = document.getElementById("name").value.trim();
+    const message = document.getElementById("message").value.trim();
+
+    if (!name || !message) {
+        alert("名前とメモを入力してください。");
         return;
     }
 
-    const memo = document.createElement("div");
-    memo.className = "memo";
+    if (message.length > 1000 || name.length > 30) {
+        alert("名前は30文字以内、メモは1000文字以内にしてください。");
+        return;
+    }
 
-    const author = document.createElement("strong");
-    author.textContent = name;
+    try {
 
-    const content = document.createElement("p");
-    content.textContent = message;
+        await addDoc(collection(db, "memos"), {
+            uid: user.uid,
+            author: name,
+            message: message,
+            createdAt: serverTimestamp()
+        });
 
-    const date = document.createElement("small");
-    date.textContent = new Date().toLocaleString("ja-JP");
+        document.getElementById("message").value = "";
 
-    memo.appendChild(author);
-    memo.appendChild(content);
-    memo.appendChild(date);
+    } catch (error) {
+        alert("登録エラー: " + error.message);
+    }
 
-    document.getElementById("memoList").prepend(memo);
+});
 
-    document.getElementById("name").value = "";
-    document.getElementById("message").value = "";
+
+// メモ一覧を取得・リアルタイム更新
+function loadMemos() {
+
+    const q = query(
+        collection(db, "memos"),
+        orderBy("createdAt", "desc")
+    );
+
+    unsubscribeMemos = onSnapshot(q, (snapshot) => {
+
+        memoList.replaceChildren();
+
+        snapshot.forEach((doc) => {
+
+            const data = doc.data();
+
+            const memo = document.createElement("div");
+            memo.className = "memo";
+
+            const author = document.createElement("strong");
+            author.textContent = data.author;
+
+            const content = document.createElement("p");
+            content.textContent = data.message;
+
+            const date = document.createElement("small");
+            date.textContent = data.createdAt
+                ? data.createdAt.toDate().toLocaleString("ja-JP")
+                : "保存中...";
+
+            memo.append(author, content, date);
+            memoList.appendChild(memo);
+
+        });
+
+    }, (error) => {
+        status.textContent = "データ取得エラー: " + error.message;
+    });
+
 }
 
 </script>
-
 </body>
 </html>
