@@ -91,7 +91,8 @@ onAuthStateChanged(auth, (user) => {
         loginArea.classList.add("hidden");
         memoArea.classList.remove("hidden");
 
-        status.textContent = "ログイン中: " + user.email;
+        document.getElementById("userInfo").textContent =
+        "ログイン中: " + user.email;
 
         loadMemos();
 
