@@ -105,9 +105,11 @@ import {
     query,
     orderBy,
     onSnapshot,
-    serverTimestamp
+    serverTimestamp,
+    updateDoc,
+    deleteDoc,
+    doc
 } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-firestore.js";
-
 
 // Firebaseの設定
 const firebaseConfig = {
@@ -231,9 +233,10 @@ function loadMemos() {
 
         memoList.replaceChildren();
 
-        snapshot.forEach((doc) => {
+        snapshot.forEach((memoDoc) => {
 
-            const data = doc.data();
+            const data = memoDoc.data();
+            const memoId = memoDoc.id;
 
             const memo = document.createElement("div");
             memo.className = "memo";
@@ -250,6 +253,29 @@ function loadMemos() {
                 : "保存中...";
 
             memo.append(author, content, date);
+
+            // 編集ボタン
+            if (data.uid === auth.currentUser.uid) {
+
+                const editButton = document.createElement("button");
+                editButton.textContent = "編集";
+
+                editButton.addEventListener("click", () => {
+                    editMemo(memoId, data.message);
+                });
+
+                // 削除ボタン
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "削除";
+                deleteButton.style.background = "#dc2626";
+
+                deleteButton.addEventListener("click", () => {
+                    deleteMemo(memoId);
+                });
+
+                memo.append(editButton, deleteButton);
+            }
+
             memoList.appendChild(memo);
 
         });
@@ -260,6 +286,63 @@ function loadMemos() {
 
 }
 
+
+// メモ編集
+async function editMemo(memoId, oldMessage) {
+
+    const newMessage = prompt(
+        "新しいメモを入力してください",
+        oldMessage
+    );
+
+    if (newMessage === null) {
+        return;
+    }
+
+    const message = newMessage.trim();
+
+    if (message === "" || message.length > 1000) {
+        alert("メモは1〜1000文字で入力してください。");
+        return;
+    }
+
+    try {
+
+        const memoRef = doc(db, "memos", memoId);
+
+        await updateDoc(memoRef, {
+            message: message
+        });
+
+        alert("メモを更新しました！");
+
+    } catch (error) {
+        alert("更新エラー: " + error.message);
+    }
+}
+
+
+// メモ削除
+async function deleteMemo(memoId) {
+
+    if (!confirm("このメモを削除しますか？")) {
+        return;
+    }
+
+    try {
+
+        const memoRef = doc(db, "memos", memoId);
+
+        await deleteDoc(memoRef);
+
+        alert("メモを削除しました！");
+
+    } catch (error) {
+        alert("削除エラー: " + error.message);
+    }
+}
+
+    
 </script>
 </body>
 </html>
