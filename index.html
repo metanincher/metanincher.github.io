@@ -4,56 +4,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>私のホームページ</title>
+    <title>Family Memo</title>
+
     <style>
         body {
             font-family: sans-serif;
-            background-color: #f0f4f8;
-            text-align: center;
-            padding: 40px 20px;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 30px 15px;
         }
 
         .container {
             background: white;
             max-width: 600px;
             margin: auto;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
+            box-shadow: 0 3px 10px #ddd;
         }
 
         h1 {
             color: #2563eb;
+            text-align: center;
+        }
+
+        input, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin: 8px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
         }
 
         button {
             background: #2563eb;
             color: white;
-            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 6px;
             cursor: pointer;
+        }
+
+        .memo {
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+
+        .memo small {
+            color: #666;
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h1>こんにちは！</h1>
 
-    <p>私の初めてのホームページです。</p>
+    <h1>Family Memo</h1>
+    <p>家族で共有するメモ帳</p>
 
-    <h2>私の好きなこと</h2>
-    <p>旅行・パソコン・プログラミング</p>
+    <h2>新しいメモ</h2>
 
-    <button onclick="hello()">
-        クリックしてね！
-    </button>
+    <label>投稿者</label>
+    <input type="text" id="name" placeholder="名前を入力">
+
+    <label>メモの内容</label>
+    <textarea id="message" rows="3"
+        placeholder="メモを入力してください"></textarea>
+
+    <button onclick="addMemo()">メモを登録</button>
+
+    <h2>登録済みメモ</h2>
+
+    <div id="memoList"></div>
+
 </div>
 
 <script>
-function hello() {
-    alert("ホームページを見てくれてありがとう！");
+
+function addMemo() {
+
+    const name = document.getElementById("name").value;
+    const message = document.getElementById("message").value;
+
+    if (name === "" || message === "") {
+        alert("名前とメモを入力してください");
+        return;
+    }
+
+    const memo = document.createElement("div");
+    memo.className = "memo";
+
+    const author = document.createElement("strong");
+    author.textContent = name;
+
+    const content = document.createElement("p");
+    content.textContent = message;
+
+    const date = document.createElement("small");
+    date.textContent = new Date().toLocaleString("ja-JP");
+
+    memo.appendChild(author);
+    memo.appendChild(content);
+    memo.appendChild(date);
+
+    document.getElementById("memoList").prepend(memo);
+
+    document.getElementById("name").value = "";
+    document.getElementById("message").value = "";
 }
+
 </script>
 
 </body>
